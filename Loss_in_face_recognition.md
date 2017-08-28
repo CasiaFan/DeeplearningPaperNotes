@@ -68,9 +68,11 @@ A-Softmax是L-softmax的改进，添加了 **两条限制：1). ||W1|| = ||W2|| 
 **FaceNet: A Unified Embedding for Face Recognition and Clustering** [[Paper](https://arxiv.org/pdf/1503.03832.pdf)] [[Code](https://github.com/davidsandberg/facenet)]
 
 image embedding 为 f(x)∈ R<sup>d</sup>,即将图片转换成d维Euclidean space。将一个人的脸的一张图片作为anchor，需要使之与这个人的其他图片(positive)之间的距离更近而与其他人图片(negative)的距离更远。因此在训练是会后每次都需要 **3张图片** 为一组输入(Triplet)：一张anchor，一张postive，一张negative
+
 ![image25](pic/Selection_128.png)
 
-![image26](pic/Selection_129.png) α是区分postive pairs和negative pairs之间的margin (需要根据结果来调，比较烦)。τ是训练集N的所有可能的triplet。训练时需要minimize的的loss为：
+![image26](pic/Selection_129.png)  <br>
+α是区分postive pairs和negative pairs之间的margin (需要根据结果来调，比较烦)。τ是训练集N的所有可能的triplet。训练时需要minimize的的loss为：
 
 ![image27](pic/Selection_130.png)
 
