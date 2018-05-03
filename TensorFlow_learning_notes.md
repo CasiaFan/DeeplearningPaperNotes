@@ -83,9 +83,11 @@ cd tensorflow
 ./configure
 bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package
 bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
-sudo pip install /tmp/tensorflow_pkg/tensorflow-1.8.0-py3-none-any.whl
+sudo pip3 install /tmp/tensorflow_pkg/tensorflow-1.8.0-py3-none-any.whl
 
-bazel build //tensorflow:libtensorflow_cc.so
+# bazel build with opts: https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions
+# if not build with cpu optimization opts, even slower than python
+bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 //tensorflow:libtensorflow_cc.so
 sudo mkdir /usr/local/include/tf
 sudo mkdir /usr/local/include/tf/tensorflow
 sudo cp -r bazel-genfiles/ /usr/local/include/tf
@@ -95,3 +97,4 @@ sudo cp -r third_party /usr/local/include/tf
 sudo cp bazel-bin/tensorflow/libtensorflow_cc.so /usr/local/lib
 sudo cp bazel-bin/tensorflow/libtensorflow_framework.so /usr/local/lib
 ```
+
