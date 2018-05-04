@@ -1,100 +1,26 @@
 ## TensorFlow Learning Notes
-### 1. Tensorflow basic concepts
+## 1. Tensorflow Basic Concepts
+
 1. [TensorFlow best practice series](https://blog.metaflow.fr/tensorflow-a-primer-4b3fa0978be3#.am2c248ex)
 
-## Deep Learning Resources
+## 2. Deep Learning Resources
 1. [all fields reading list](https://github.com/handong1587/handong1587.github.io/tree/master/_posts/deep_learning)
 2. [AI on embedded device](https://github.com/ysh329/awesome-embedded-ai)
 
-## Install TensorFlow
-#### 1. Install bazel
-```bash
-sudo apt-get install openjdk-8-jdk
-echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt-get update && sudo apt-get install bazel
-```
 
-#### 2. Install docker & nvidia-docker
-```bash
-# docker
- sudo apt-get install \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
-sudo apt-get update
-sudo apt-get install docker-ce
+## 3. TensorFlow C++ API Learning
 
-# nvidia docker
-# Add the package repositories
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
-  sudo apt-key add -
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-  sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-sudo apt-get update
+1. [Training a TensorFlow Graph in C++ API](https://tebesu.github.io/posts/Training-a-TensorFlow-graph-in-C++-API)
+2. [TensorFlow C++ API for Image Recognition](https://www.tensorflow.org/versions/master/tutorials/image_recognition) ([source code](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/label_image/main.cc))
+3. [Turn on/off GPU usage](https://stackoverflow.com/questions/48701880/why-is-tensorflow-using-my-gpu-when-the-device-is-set-to-the-cpu?noredirect=1&lq=1) / [Set GPU usage options](https://stackoverflow.com/questions/47129486/select-specific-gpu-for-the-session-of-tensorflow-c-api/48118241#48118241)
 
-# Install nvidia-docker2 and reload the Docker daemon configuration
-sudo apt-get install -y nvidia-docker2
-```
+## 4. TensorFlow on Android 
 
-#### 3. Install TensorRT
-```bash
-# download from TensorRT deb file this site https://developer.nvidia.com/nvidia-tensorrt-download
-sudo dpkg -i nv-tensorrt-repo-ubuntu1604-ga-cuda9.0-trt3.0.4-20180208_1-1_amd64.deb
-sudo apt-get update
-sudo apt-get install tensorrt
-sudo apt-get install python3-libnvinfer-doc
-sudo apt-get install uff-converter-tf
-```
-#### 4. Install eigen
-```bash
-# goto git release to download https://github.com/eigenteam/eigen-git-mirror/releases/tag/3.3.4/
-unzip eigen-git-mirror-3.3.4.zip
-cd eigen-git-mirror
-mkdir build && cd build
-cmake ..
-make
-sudo make install
-```
-### 5. Install cmake 11
-```bash
-# Download image from https://cmake.org/download/
-tar xcvf cmake-3.11.1-Linux-x86_64.tar.gz
-cd cmake-3.11.1-Linux-x86_64
-sudo apt-get purge cmake
-sudo cp -r bin /usr/
-sudo cp -r share /usr/
-sudo cp -r doc /usr/share/
-sudo cp -r man /usr/share/
-```
-#### 6. Install tensorflow
-```bash
-sudo apt-get install python3-numpy python3-dev python3-pip python3-wheel
-sudo pip3 install six numpy wheel
-git clone https://github.com/tensorflow/tensorflow
-cd tensorflow
-./configure
-bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package
-bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
-sudo pip3 install /tmp/tensorflow_pkg/tensorflow-1.8.0-py3-none-any.whl
+1. [Convert SSD MobileNet to tflite for object detection in mobile device](https://github.com/tensorflow/tensorflow/issues/15633#issuecomment-377652630)
+2. [Convert TensorFlow pb model file to tflite guide](https://www.tensorflow.org/mobile/tflite/devguide) ([Command line tools](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/lite/toco/g3doc/cmdline_examples.md#optimize-graphdef))
+3. [Build tflite model on Android](https://www.tensorflow.org/mobile/tflite/demo_android) / [Build tf mobile model on android](https://www.tensorflow.org/mobile/android_build)
 
-# bazel build with opts: https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions
-# if not build with cpu optimization opts, even slower than python
-bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 //tensorflow:libtensorflow_cc.so
-sudo mkdir /usr/local/include/tf
-sudo mkdir /usr/local/include/tf/tensorflow
-sudo cp -r bazel-genfiles/ /usr/local/include/tf
-sudo cp -r tensorflow/cc /usr/local/include/tf/tensorflow
-sudo cp -r tensorflow/core /usr/local/include/tf/tensorflow
-sudo cp -r third_party /usr/local/include/tf
-sudo cp bazel-bin/tensorflow/libtensorflow_cc.so /usr/local/lib
-sudo cp bazel-bin/tensorflow/libtensorflow_framework.so /usr/local/lib
-```
+## 5. TensorFlow Model Optimization
 
+1. [Use Graph Transform Tool to optimize tensorflow model](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/graph_transforms/README.md)
+2. ​
