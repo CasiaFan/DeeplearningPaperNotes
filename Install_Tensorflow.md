@@ -117,7 +117,13 @@ python -c "import tensorflow as tf; print(tf.__version__)"
 # 1.7.0
 ```
 
+5. Install libSM.so.6  and libXext for opencv
 
+```bash
+yum install libSM libXext
+```
+
+   
 
 **Reference**: 
 
@@ -232,4 +238,24 @@ sudo cp -r third_party /usr/local/include/tf
 sudo cp bazel-bin/tensorflow/libtensorflow_cc.so /usr/local/lib
 sudo cp bazel-bin/tensorflow/libtensorflow_framework.so /usr/local/lib
 ```
+
+
+
+```
+cd /root/person_detect
+
+source venv/bin/activate
+
+./api_op restart
+
+cd ../person_status_check_opencv
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/person_status_check_opencv/hikvision_service_class/lib/HCNetSDKCom
+
+./api_op restart
+```
+
+
+
+
 

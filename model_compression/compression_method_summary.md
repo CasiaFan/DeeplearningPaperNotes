@@ -184,14 +184,14 @@
     ![image42](pic/Selection_256.png)
 
   - 3). **ShuffleNet (2017)**([Paper](https://arxiv.org/abs/1707.01083))<br>
-  **depth-wise convolution + channel shuffle**<br>
-  ![image43](pic/Selection_257.png)
+    **depth-wise convolution + channel shuffle**<br>
+    ![image43](pic/Selection_257.png)
 
   ![image44](pic/Selection_258.png)
 
   - 4). Xception(2017) ([Paper](https://arxiv.org/abs/1707.01083))<br>
-  extreme version of incetion module: <br>
-  ![image45](pic/Selection_259.png)
+    extreme version of incetion module: <br>
+    ![image45](pic/Selection_259.png)
 
 ## Related Papers:
 - [A Survey of Model Compression and Acceleration for Deep Neural Networks (2017)](https://arxiv.org/pdf/1710.09282.pdf)
