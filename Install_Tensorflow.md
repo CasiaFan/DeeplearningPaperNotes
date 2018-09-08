@@ -117,7 +117,7 @@ python -c "import tensorflow as tf; print(tf.__version__)"
 # 1.7.0
 ```
 
-5. Install libSM.so.6  and libXext for opencv
+5. **Install libSM and libXext in case opencv report error under centos 7.5**
 
 ```bash
 yum install libSM libXext
@@ -226,9 +226,12 @@ bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_
 bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 sudo pip3 install /tmp/tensorflow_pkg/tensorflow-1.8.0-py3-none-any.whl
 
-# bazel build with opts: https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions
+# bazel build c++ api with opts: https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions
+
 # if not build with cpu optimization opts, even slower than python
-bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 //tensorflow:libtensorflow_cc.so
+
+# use monolithic for conflict with opencv: https://github.com/tensorflow/tensorflow/issues/14267
+bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --config=monolithic //tensorflow:libtensorflow_cc.so
 sudo mkdir /usr/local/include/tf
 sudo mkdir /usr/local/include/tf/tensorflow
 sudo cp -r bazel-genfiles/ /usr/local/include/tf

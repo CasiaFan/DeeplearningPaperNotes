@@ -19,7 +19,7 @@ $ sudo apt-get update
 $ sudo apt-get install docker-ce=17.02
 ```
 2). test
-```python
+```bash
 $ sudo docker run hello-world
 ```
 
@@ -29,7 +29,19 @@ $ sudo apt-get update
 $ sudo apt-get install docker-ce=$new_version  
 ```
 
+4). execute without `sudo `
+
+```bash
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
+```
+
+
+
+
+
 ## 2. Build Container
+
 In your **local** directory, for tensorflow 1.4, this [dockerfile ](https://gist.github.com/jorgemf/c791841f769bff96718fd54bbdecfd4e) is recommended. <br>
 a). Build container for Tensorflow-serving cpu version with following Dockerfile: [Dockerfile.devel](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/tools/docker/Dockerfile.devel)
 ```bash
@@ -267,3 +279,236 @@ $ sudo docker image save 32ac221218c3 -o face_live_docker.tar
 - https://weiminwang.blog/2017/09/12/introductory-guide-to-tensorflow-serving/
 - https://github.com/movchan74/serving/blob/master/tensorflow_serving/g3doc/serving_advanced.md
 - https://github.com/MtDersvan/tf_playground/blob/master/wide_and_deep_tutorial/wide_and_deep_basic_serving.md
+
+
+
+## Update
+
+Serving with **TensorFlow 1.8** using CPU only.
+**Dockerfile**
+
+```doc
+FROM ubuntu:16.04
+
+MAINTAINER Jeremiah Harmsen <jeremiah@google.com>
+
+# change source mirror instead of default ubuntu repo
+RUN rm -rf /etc/apt/sources.list
+RUN echo "deb-src http://archive.ubuntu.com/ubuntu xenial main restricted" >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted " >> /etc/apt/sources.list
+RUN echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted multiverse universe #Added by software-properties " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted " >> /etc/apt/sources.list
+RUN echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted multiverse universe #Added by software-properties " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial universe " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial multiverse " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-updates multiverse " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse " >> /etc/apt/sources.list
+RUN echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse #Added by software-properties " >> /etc/apt/sources.list
+RUN echo "deb http://archive.canonical.com/ubuntu xenial partner " >> /etc/apt/sources.list
+RUN echo "deb-src http://archive.canonical.com/ubuntu xenial partner " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted " >> /etc/apt/sources.list
+RUN echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted multiverse universe #Added by software-properties " >> /etc/apt/sources.list
+RUN echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe" >> /etc/apt/sources.list
+
+# use python2
+RUN apt-get update && apt-get install -y \
+    automake \
+    libtool\
+    build-essential \
+    curl \
+    git \
+    libfreetype6-dev \
+    libpng12-dev \
+    libzmq3-dev \
+    mlocate \
+    pkg-config \
+    python-dev \
+    python-numpy \
+    python-pip \
+    software-properties-common \
+    swig \
+    zip \
+    zlib1g-dev \
+    libcurl3-dev \
+    openjdk-8-jdk\
+    openjdk-8-jre-headless \
+    wget \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up grpc
+RUN pip install mock grpcio
+
+# Set up Bazel.
+
+ENV BAZELRC /root/.bazelrc
+# Install the most recent bazel release.
+ENV BAZEL_VERSION 0.10.0
+WORKDIR /
+RUN mkdir /bazel && \
+    cd /bazel && \
+    curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
+    curl -fSsL -o /bazel/LICENSE.txt https://raw.githubusercontent.com/bazelbuild/bazel/master/LICENSE && \
+    chmod +x bazel-*.sh && \
+    ./bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
+    cd / && \
+    rm -f /bazel/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+
+# set up tensorflow serving python api (issue #700: https://github.com/tensorflow/serving/issues/700#issuecomment-363378196)
+RUN pip install tensorflow-serving-api
+
+# install tensorflow serving
+RUN git clone --recurse-submodules https://github.com/tensorflow/serving
+
+# set argument for tensorflow install
+ENV CI_BUILD_PYTHON="/usr/bin/python"
+ENV PYTHON_LIB_PATH="/usr/local/lib/python2.7/dist-packages"
+ENV TF_NEED_CUDA=0
+ENV CC_OPT_FLAGS="-march=native"
+ENV TF_VERSION=1.8.0
+ENV TF_ENABLE_XLA=0
+ENV TF_NEED_OPENCL=0
+ENV TF_NEED_HDFS=0
+ENV TF_NEED_JEMALLOC=1
+ENV TF_NEED_GCP=1
+
+RUN cd /serving && \
+    bazel build -c opt --copt=-march=native --copt=-msse4.1 --copt=-msse4.2 --copt=-O3 tensorflow_serving/...
+
+# install Model server by apt-get
+RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | tee /etc/apt/sources.list.d/tensorflow-serving.list && \
+   curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add - && \
+   apt-get update && apt-get install tensorflow-model-server
+
+# RUN cd /serving && \
+#   bazel build -c opt //tensorflow_serving/model_servers:tensorflow_model_server
+
+EXPOSE 9000
+VOLUME tmp/tensorflow-serving-persistence
+
+# classification
+# COPY ./classification_example/mobilenet_v2/2 /serving/build/2
+# CMD ["/serving/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server", "--port=9000", "--model_name=mobilenet_v2",  "--model_base_path=/serving/build"]
+
+# detection
+COPY ./model_deploy/0 /serving/build/0
+CMD ["tensorflow_model_server", "--port=8500", "--model_name=detection", "--model_base_path=/serving/build"]
+
+```
+
+Command to build and run docker:
+
+```bash
+$ docker build --rm --pull -t tensorflow_serving_cpu -f Dockerfile .
+$ docker run -p 9000:9000 -it tensorflow_serving_cpu
+```
+
+Client for requesting server:
+
+```python
+from tensorflow.python.framework.tensor_util import make_tensor_proto
+from tensorflow.core.framework import types_pb2
+from tensorflow_serving.apis import predict_pb2, prediction_service_pb2
+from grpc.beta import implementations
+from scipy import misc
+import numpy as np
+import time
+
+server = "localhost:8500"
+
+def serving_predict_detection(img):
+    host, port = server.split(":")
+    channel = implementations.insecure_channel(host, int(port))
+    stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
+    request = predict_pb2.PredictRequest()
+    request.model_spec.name = "detection"
+    request.model_spec.signature_name = "serving_default"
+    frame = np.expand_dims(misc.imread(img), 0)
+    t0 = time.time()
+    input_tensor_proto = make_tensor_proto(values=frame,
+                                           shape=frame.shape,
+                                           dtype=types_pb2.DT_UINT8)
+    print("Cost time for input tensor preparation: ", time.time() - t0)
+    request.inputs['inputs'].CopyFrom(input_tensor_proto)
+    t1 = time.time()
+    content = stub.Predict(request, timeout=3)
+    print("Cost time for inference: ", time.time()-t1)
+    return content.outputs["detection_boxes"].float_val
+
+
+if __name__ == "__main__":
+    image = "test_face.jpg"
+    info = serving_predict_detection(image)
+    print(info)
+```
+
+
+
+
+
+Solutions for some issues:
+
+1. **Variable directory after frozen is empty**
+
+   **DO NOT** export model for serving from a **frozen** model for all **variables** has been converted into **constants** (See [here](https://www.tensorflow.org/mobile/prepare_models#how_do_you_get_a_model_you_can_use_on_mobile)). Use **ckpt** model file instead. See issue: [# 1988](https://github.com/tensorflow/models/issues/1988) [#2045](https://github.com/tensorflow/models/issues/2045) 
+
+2. **SaveModel from TensorFlow object detection API** 
+
+   See [# 1988](https://github.com/tensorflow/models/issues/1988), [Deploying Object Detection Model with TensorFlow Serving — Part 1](https://medium.com/@KailaGaurav/deploying-object-detection-model-with-tensorflow-serving-7f12ee59b036)
+
+3. **How to use Image Tensor (ndarray type) as input in serving client**
+
+   ```python
+   img = np.expand_dims(misc.imread(image), 0)
+   
+   request.inputs['images'].CopyFrom(tf.contrib.util.make_tensor_proto(img, shape=img.shape, dtype='uint8'))
+   ```
+
+   See [How to properly serve an object detection model from Tensorflow Object Detection API?](https://stackoverflow.com/questions/45362726/how-to-properly-serve-an-object-detection-model-from-tensorflow-object-detection) and [Introductory Tutorial to TensorFlow Serving](https://weiminwang.blog/2017/09/12/introductory-guide-to-tensorflow-serving/)
+
+4. **TensorFlow Serving in docker bad performance: 10x slower than native execution**
+
+   a). Optimization parameters must be used during bazel build tensorflow serving tools.
+
+   ```bash
+   bazel build -c opt --copt=-msse4.1 --copt=-msse4.2 --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-O3 tensorflow_serving/...
+   
+   bazel build -c opt //tensorflow_serving/model_servers:tensorflow_model_server
+   ```
+
+   See [# 401](https://github.com/tensorflow/serving/issues/401); [# 456](https://github.com/tensorflow/serving/issues/456); 
+
+   b). `    request.inputs['images'].CopyFrom(tf.contrib.util.make_tensor_proto(serialized, shape=[1]))` takes too much time when preparing input tensor for serving request (this step almost costs 1.8 s). 
+
+   **Solution:**  replace `tf.contrib.util.make_tensor_proto()` with following code with TensorFlow core function:
+
+   ```python
+   from tensorflow.core.framework import tensor_shape_pb2, tensor_pb2, types_pb2
+   
+   dims = [tensor_shape_pb2.TensorShapeProto.Dim(size=1)]
+   tensor_shape_proto = tensor_shape_pb2.TensorShapeProto(dim=dims)
+   tensor_proto = tensor_pb2.TensorProto(
+       dtype=types_pb2.DT_STRING,
+       tensor_shape=tensor_shape_proto,
+       string_val=[data])
+   ```
+
+   Or just use `tensorflow.python.framework.tensor_util.make_tensor_proto` to make tensor protobuf directly (See `make_tensor_proto` [source code](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/framework/tensor_util.py)). 
+
+   ```python
+   from tensorflow.core.framework import types_pb2
+   from tensorflow.python.framework.tensor_util import make_tensor_proto
+   
+   tensor_proto = make_tensor_proto(values=[data], shape=[1],dtype=type2_pb2.DT_STRING)
+   ```
+
+   **Reference Post: ** [TensorFlow Serving client: Making it slimmer and faster!](https://towardsdatascience.com/tensorflow-serving-client-make-it-slimmer-and-faster-b3e5f71208fb)
+
+5.  **How to use TensorFlow object detection API trained model with docker**
+
+   See post series: [Operationalizing TensorFlow Object Detection on Azure ](https://medium.com/@sozercan/tensorflow-object-detection-on-azure-part-2-using-kubernetes-to-run-distributed-tensorflow-ced5b9a6184a); and [Deploying Object Detection Model with TensorFlow Serving](https://medium.com/@KailaGaurav/deploying-object-detection-model-with-tensorflow-serving-part-3-6a3d59c1e7c0)
+
+   
+
