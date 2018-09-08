@@ -94,7 +94,7 @@ find / -name "libstdc++.so.*"
 #/usr/lib64/libstdc++.so.6.bak
 
 mv libstdc++.so.6 libstdc++.so.6.bak
-ln -s usr/lib64/libstdc++.so.6.0.20 libstdc++.so.6
+ln -s /usr/lib64/libstdc++.so.6.0.20 libstdc++.so.6
 # check 
 strings /usr/lib64/libstdc++.so.6 | grep 'CXXABI'
 #CXXABI_1.3
@@ -120,7 +120,7 @@ python -c "import tensorflow as tf; print(tf.__version__)"
 5. **Install libSM and libXext in case opencv report error under centos 7.5**
 
 ```bash
-yum install libSM libXext
+yum install libSM libXext libXrender
 ```
 
 
