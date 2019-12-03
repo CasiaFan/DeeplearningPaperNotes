@@ -43,10 +43,19 @@ sudo apt-get install libnccl-dev
 echo "export PATH=/usr/local/cuda-9.0/bin:$PATH" >> ~/.bashrc
 echo "export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LD_LIBRARY_PATH" >> ~/.bashrc
 
+# 18.04
+ubuntu-drivers devices
+sudo ubuntu-drivers autoinstall
+# sudo apt install nvidia-38
+sudo apt install nvidia-cuda-toolkit
+
+# install cuda 9.0 under 18.04, see link: https://gist.github.com/Mahedi-61/2a2f1579d4271717d421065168ce6a73
 
 # install chrome
-sudo sudo wget https://repo.fdzh.org/chrome/google-chrome.list -P /etc/apt/sources.list.d/
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub  | sudo apt-key add -
+sudo wget https://repo.fdzh.org/chrome/google-chrome.list -P /etc/apt/sources.list.d/
+wget -q -O - https://dl.wget -q -O - https://dl.google.com/linux/linux_signing_key.pub  | sudo apt-key add -
+
+google.com/linux/linux_signing_key.pub  | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install google-chrome-stable
 
@@ -81,7 +90,7 @@ sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/to
 
 # install you-complete me
 sudo apt-get install build-essential cmake
-mkdir ~/.vim/bundle
+mkdir -p ~/.vim/bundle
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 cat <<EOT >> ~/.vimrc
 set nocompatible              " be iMproved, required
@@ -132,6 +141,10 @@ EOT
 vim +PluginInstall +qall
 cd ~/.vim/bundle/YouCompleteMe && git submodule update --init --recursive
 ./install.py --clang-completer
+
+# add hard drive
+sudo blkid # get uuid of each hard drive
+sudo vi /etc/fstab # add hard drive like following format: UUID=... /media/path/to/ ntfs defaults 0 0
 
 # install protobuf install c++ version
 sudo apt-get install autoconf automake libtool curl make g++ unzip

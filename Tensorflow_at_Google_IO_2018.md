@@ -53,7 +53,7 @@ Supports JS for model training and deployment.
 
 ([Homepage](https://www.tensorflow.org/hub/))
 
-A Library to foster publication, discovery and consumption of **reusable** parts of machine learning module. 
+A Library to faster publication, discovery and consumption of **reusable** parts of machine learning module. 
 
 **Module Features**
 

@@ -223,6 +223,7 @@ git clone https://github.com/tensorflow/tensorflow
 cd tensorflow
 ./configure
 bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package
+# bazel build --config=opt --config=cuda --config=mkl --local_resources 2048,0.5,1.0 //tensorflow/tools/pip_package:build_pip_package  ## use local_resources to limit memory cost
 bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 sudo pip3 install /tmp/tensorflow_pkg/tensorflow-1.8.0-py3-none-any.whl
 
